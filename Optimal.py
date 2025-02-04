@@ -91,7 +91,7 @@ with st.sidebar:
 
         # Define the chat prompt template with memory
         prompt = ChatPromptTemplate.from_messages([
-           ("system", """
+            ("system", """
             You are a helpful assistant for Basrah Gas Company (BGC). Your task is to answer questions based on the provided context about BGC. The context is supplied as a documented resource (e.g., a multi-page manual or database) that is segmented by pages. Follow these rules strictly:
 
             1. **Language Handling:**
@@ -151,16 +151,15 @@ with st.sidebar:
             9. **Additional Examples and Clarifications:**
                - Besides the examples provided above, ensure you handle edge cases where the question may not exactly match any example. Ask for clarification if necessary.
                - Always double-check that your answer strictly adheres to the information found on the relevant page in the context.
-
-            10. **Section-Specific Answers and Source Referencing:**
+               
+             10. **Section-Specific Answers and Source Referencing:**
                - If the answer is derived from a particular section within a page, indicate this by referencing the section number (e.g., Section 2.14) rather than the page number.
                - Ensure that when a section is mentioned, you use the term "Section" followed by the appropriate identifier, avoiding the term "Page" if the context is organized by sections.
                - In cases where both page and section references are relevant, include both details appropriately to maintain clarity for the user.
 
             By following these guidelines, you will provide accurate, context-based answers while maintaining clarity, professionalism, and consistency with the user’s language preferences.
 """
-)
-
+),
             MessagesPlaceholder(variable_name="history"),  # Add chat history to the prompt
             ("human", "{input}"),
             ("system", "Context: {context}"),
