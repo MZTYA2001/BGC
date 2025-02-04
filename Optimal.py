@@ -354,19 +354,28 @@ if voice_input:
                     page_numbers = set()
                     for doc in response["context"]:
                         page_number = doc.metadata.get("page", "unknown")
-                        if page_number != "unknown" and str(page_number).isdigit():  # Check if page_number is a valid number
-                            page_numbers.add(int(page_number))  # Convert to integer for sorting
+                        if page_number != "unknown" and str(page_number).isdigit():
+                            page_numbers.add(int(page_number))
 
-                    # Display the page numbers
                     if page_numbers:
-                        page_numbers_str = ", ".join(map(str, sorted(page_numbers)))  # Sort pages numerically and convert back to strings
-                        st.write(f"هذه الإجابة وفقًا للصفحات: {page_numbers_str}" if interface_language == "العربية" else f"This answer is according to pages: {page_numbers_str}")
-
-                        # Capture and display screenshots of the relevant pages
-                        highlighted_pages = [(page_number, "") for page_number in page_numbers]
+                        # Create a list of screenshots with their page numbers
+                        highlighted_pages = [(page_number, "") for page_number in sorted(page_numbers)]
                         screenshots = pdf_searcher.capture_screenshots(pdf_path, highlighted_pages)
-                        for screenshot in screenshots:
-                            st.image(screenshot)
+                        
+                        # Create rows of two columns for screenshots
+                        for i in range(0, len(screenshots), 2):
+                            col1, col2 = st.columns(2)
+                            
+                            # First column
+                            with col1:
+                                st.image(screenshots[i])
+                                st.markdown(f"<div style='text-align: center'>Page {sorted(page_numbers)[i]}</div>", unsafe_allow_html=True)
+                            
+                            # Second column (if available)
+                            if i + 1 < len(screenshots):
+                                with col2:
+                                    st.image(screenshots[i + 1])
+                                    st.markdown(f"<div style='text-align: center'>Page {sorted(page_numbers)[i + 1]}</div>", unsafe_allow_html=True)
                     else:
                         st.write("لا توجد أرقام صفحات صالحة في السياق." if interface_language == "العربية" else "No valid page numbers available in the context.")
                 else:
@@ -427,19 +436,28 @@ if human_input:
                     page_numbers = set()
                     for doc in response["context"]:
                         page_number = doc.metadata.get("page", "unknown")
-                        if page_number != "unknown" and str(page_number).isdigit():  # Check if page_number is a valid number
-                            page_numbers.add(int(page_number))  # Convert to integer for sorting
+                        if page_number != "unknown" and str(page_number).isdigit():
+                            page_numbers.add(int(page_number))
 
-                    # Display the page numbers
                     if page_numbers:
-                        page_numbers_str = ", ".join(map(str, sorted(page_numbers)))  # Sort pages numerically and convert back to strings
-                        st.write(f"هذه الإجابة وفقًا للصفحات: {page_numbers_str}" if interface_language == "العربية" else f"This Answer is According to Pages: {page_numbers_str}")
-
-                        # Capture and display screenshots of the relevant pages
-                        highlighted_pages = [(page_number, "") for page_number in page_numbers]
+                        # Create a list of screenshots with their page numbers
+                        highlighted_pages = [(page_number, "") for page_number in sorted(page_numbers)]
                         screenshots = pdf_searcher.capture_screenshots(pdf_path, highlighted_pages)
-                        for screenshot in screenshots:
-                            st.image(screenshot)
+                        
+                        # Create rows of two columns for screenshots
+                        for i in range(0, len(screenshots), 2):
+                            col1, col2 = st.columns(2)
+                            
+                            # First column
+                            with col1:
+                                st.image(screenshots[i])
+                                st.markdown(f"<div style='text-align: center'>Page {sorted(page_numbers)[i]}</div>", unsafe_allow_html=True)
+                            
+                            # Second column (if available)
+                            if i + 1 < len(screenshots):
+                                with col2:
+                                    st.image(screenshots[i + 1])
+                                    st.markdown(f"<div style='text-align: center'>Page {sorted(page_numbers)[i + 1]}</div>", unsafe_allow_html=True)
                     else:
                         st.write("لا توجد أرقام صفحات صالحة في السياق." if interface_language == "العربية" else "No valid page numbers available in the context.")
                 else:
