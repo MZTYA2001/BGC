@@ -1,5 +1,7 @@
 import streamlit as st
 import os
+from datetime import datetime
+import json
 from langchain_groq import ChatGroq
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -14,6 +16,74 @@ import pdfplumber  # For searching text in PDF
 # Initialize API key variables
 groq_api_key = "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"
 google_api_key = "AIzaSyDdAiOdIa2I28sphYw36Genb4D--2IN1tU"
+
+# Initialize session state for chat management
+if 'chats' not in st.session_state:
+    st.session_state.chats = {}
+
+if 'current_chat_id' not in st.session_state:
+    st.session_state.current_chat_id = None
+
+def create_new_chat():
+    chat_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    st.session_state.chats[chat_id] = {
+        'messages': [],
+        'memory': ConversationBufferMemory(
+            memory_key="history",
+            return_messages=True
+        ),
+        'date': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    return chat_id
+
+def load_chat(chat_id):
+    st.session_state.current_chat_id = chat_id
+    st.session_state.messages = st.session_state.chats[chat_id]['messages']
+    st.session_state.memory = st.session_state.chats[chat_id]['memory']
+
+def save_chats():
+    chat_data = {}
+    for chat_id, chat in st.session_state.chats.items():
+        chat_data[chat_id] = {
+            'messages': chat['messages'],
+            'date': chat['date']
+        }
+    with open('chat_history.json', 'w', encoding='utf-8') as f:
+        json.dump(chat_data, f, ensure_ascii=False, indent=4)
+
+def load_saved_chats():
+    try:
+        with open('chat_history.json', 'r', encoding='utf-8') as f:
+            chat_data = json.load(f)
+            for chat_id, data in chat_data.items():
+                if chat_id not in st.session_state.chats:
+                    st.session_state.chats[chat_id] = {
+                        'messages': data['messages'],
+                        'memory': ConversationBufferMemory(
+                            memory_key="history",
+                            return_messages=True
+                        ),
+                        'date': data['date']
+                    }
+                    # Rebuild memory from messages
+                    for msg in data['messages']:
+                        if msg['role'] == 'user':
+                            st.session_state.chats[chat_id]['memory'].chat_memory.add_user_message(msg['content'])
+                        elif msg['role'] == 'assistant':
+                            st.session_state.chats[chat_id]['memory'].chat_memory.add_ai_message(msg['content'])
+    except FileNotFoundError:
+        pass
+
+# Create initial chat if none exists
+if not st.session_state.chats:
+    initial_chat_id = create_new_chat()
+    st.session_state.current_chat_id = initial_chat_id
+
+# Load saved chats when the app starts
+if 'chats_loaded' not in st.session_state:
+    load_saved_chats()
+    st.session_state.chats_loaded = True
+
 
 # Change the page title and icon
 st.set_page_config(
@@ -70,6 +140,24 @@ class PDFSearchAndDisplay:
 
 # Sidebar configuration
 with st.sidebar:
+    # Chat management section
+    st.title("Chat Management")
+    
+    # New chat button
+    if st.button("New Chat"):
+        new_chat_id = create_new_chat()
+        load_chat(new_chat_id)
+        st.rerun()
+    
+    # Chat history
+    st.subheader("Chat History")
+    for chat_id, chat_data in st.session_state.chats.items():
+        if st.button(f"Chat from {chat_data['date']}", key=f"chat_{chat_id}"):
+            load_chat(chat_id)
+            st.rerun()
+
+    st.divider()
+    
     # Language selection dropdown
     interface_language = st.selectbox("Interface Language", ["English", "العربية"])
 
@@ -399,7 +487,9 @@ else:
 
 # If text input is detected, process it
 if human_input:
-    st.session_state.messages.append({"role": "user", "content": human_input})
+    current_chat = st.session_state.chats[st.session_state.current_chat_id]
+    current_chat['messages'].append({"role": "user", "content": human_input})
+    st.session_state.messages = current_chat['messages']
     with st.chat_message("user"):
         st.markdown(human_input)
 
@@ -418,15 +508,16 @@ if human_input:
         assistant_response = response["answer"]
 
         # Append and display assistant's response
-        st.session_state.messages.append(
-            {"role": "assistant", "content": assistant_response}
-        )
+        current_chat['messages'].append({"role": "assistant", "content": assistant_response})
         with st.chat_message("assistant"):
             st.markdown(assistant_response)
 
         # Add user and assistant messages to memory
-        st.session_state.memory.chat_memory.add_user_message(human_input)
-        st.session_state.memory.chat_memory.add_ai_message(assistant_response)
+        current_chat['memory'].chat_memory.add_user_message(human_input)
+        current_chat['memory'].chat_memory.add_ai_message(assistant_response)
+        
+        # Save chats after update
+        save_chats()
 
         # Check if the response contains any negative phrases
         if not any(phrase in assistant_response for phrase in negative_phrases):
