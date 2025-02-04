@@ -153,9 +153,9 @@ with st.sidebar:
                - Always double-check that your answer strictly adheres to the information found on the relevant page in the context.
                
             10. **Section-Specific Answers and Source Referencing:**
-               - If the answer is derived from a particular section within a page, indicate this by referencing the section number alongside the page number (e.g., page 23, Section 2.14) .
+               - If the answer is derived from a particular section within a page, indicate this by referencing the section number (e.g., Section 2.14) rather than the page number.
                - Ensure that when a section is mentioned, you use the term "Section" followed by the appropriate identifier, avoiding the term "Page" if the context is organized by sections.
-               - In cases where both page and section references are relevant, include both details appropriately to maintain clarity for the user. 
+               - In cases where both page and section references are relevant, include both details appropriately to maintain clarity for the user.
                
             By following these guidelines, you will provide accurate, context-based answers while maintaining clarity, professionalism, and consistency with the user’s language preferences.
 """
