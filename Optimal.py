@@ -434,8 +434,8 @@ if voice_input:
         st.session_state.memory.chat_memory.add_user_message(voice_input)
         st.session_state.memory.chat_memory.add_ai_message(assistant_response)
 
-        # Check if the response contains any negative phrases
-        if not any(phrase in assistant_response for phrase in negative_phrases):
+        # Only show page references if the response is not a negative/unclear response
+        if not any(phrase in assistant_response.lower() for phrase in negative_phrases):
             with st.expander("مراجع الصفحات" if interface_language == "العربية" else "Page References"):
                 if "context" in response:
                     # Extract unique page numbers from the context
@@ -519,8 +519,8 @@ if human_input:
         # Save chats after update
         save_chats()
 
-        # Check if the response contains any negative phrases
-        if not any(phrase in assistant_response for phrase in negative_phrases):
+        # Only show page references if the response is not a negative/unclear response
+        if not any(phrase in assistant_response.lower() for phrase in negative_phrases):
             with st.expander("مراجع الصفحات" if interface_language == "العربية" else "Page References"):
                 if "context" in response:
                     # Extract unique page numbers from the context
