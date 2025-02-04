@@ -170,17 +170,29 @@ with st.sidebar:
 
                 # Load existing FAISS index with safe deserialization
                 embeddings_path = "embeddings"  # Path to your embeddings folder
+                embeddings_path_2 = "embeddings_ocr"
+                
                 try:
-                    st.session_state.vectors = FAISS.load_local(
-                        embeddings_path,
-                        embeddings,
-                        allow_dangerous_deserialization=True  # Only use if you trust the source of the embeddings
+                    # Load first FAISS index
+                    vectors_1 = FAISS.load_local(
+                    embeddings_path, embeddings, allow_dangerous_deserialization=True
                     )
-                except Exception as e:
-                    st.error(f"حدث خطأ أثناء تحميل التضميدات: {str(e)}" if interface_language == "العربية" else f"Error loading embeddings: {str(e)}")
-                    st.session_state.vectors = None
 
-        # Microphone button in the sidebar
+                    # Load second FAISS index
+                    vectors_2 = FAISS.load_local(
+                    embeddings_path_2, embeddings, allow_dangerous_deserialization=True
+                    )
+
+                    # Merge both FAISS indexes
+                    vectors_1.merge_from(vectors_2)
+
+                    # Store in session state
+                    st.session_state.vectors = vectors_1
+
+                except Exception as e:
+                    st.error(f"Error loading embeddings: {str(e)}")
+                    st.session_state.vectors = None
+            # Microphone button in the sidebar
         st.markdown("### الإدخال الصوتي" if interface_language == "العربية" else "### Voice Input")
         input_lang_code = "ar" if interface_language == "العربية" else "en"  # Set language code based on interface language
         voice_input = speech_to_text(
@@ -216,7 +228,7 @@ with col1:
 # Display the title and description in the second column
 with col2:
     if interface_language == "العربية":
-        st.title("محمد الياسين | بوت الدردشة BGC")
+        st.title("بوت الدردشة BGC")
         st.write("""
         **مرحبًا!**  
         هذا بوت الدردشة الخاص بشركة غاز البصرة (BGC). يمكنك استخدام هذا البوت للحصول على معلومات حول الشركة وأنشطتها.  
@@ -226,7 +238,7 @@ with col2:
         - سيتم الرد عليك بناءً على المعلومات المتاحة.  
         """)
     else:
-        st.title("Mohammed Al-Yaseen | BGC ChatBot")
+        st.title("BGC ChatBot")
         st.write("""
         **Welcome!**  
         This is the Basrah Gas Company (BGC) ChatBot. You can use this bot to get information about the company and its activities.  
