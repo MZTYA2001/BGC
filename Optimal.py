@@ -13,7 +13,7 @@ import pdfplumber  # For searching text in PDF
 
 # Initialize API key variables
 groq_api_key = "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"
- google_api_key = "AIzaSyDdAiOdIa2I28sphYw36Genb4D--2IN1tU"
+google_api_key = "AIzaSyDdAiOdIa2I28sphYw36Genb4D--2IN1tU"
 
 # Change the page title and icon
 st.set_page_config(
